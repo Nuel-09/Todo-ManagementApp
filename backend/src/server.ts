@@ -27,7 +27,7 @@ const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017/todo_app";
 const configurePlugins = async () => {
   // CORS - Allow frontend to connect
   await app.register(fastifyCors, {
-    origin: true,
+    origin: ["https://taskapp-cvmv.onrender.com"],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   });
@@ -41,10 +41,11 @@ const configurePlugins = async () => {
     cookieName: "todo.sid",
     cookie: {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      secure: true,
+      sameSite: "none",
       path: "/",
-      maxAge: 60 * 60 * 24 * 7, // 7 days
+      maxAge: 60 * 60 * 24 * 7, // 7 days,
+      domain: ".onrender.com", // This allows the cookie to be shared across both subdomains
     },
     saveUninitialized: false,
     store: MongoStore.create({
