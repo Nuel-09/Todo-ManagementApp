@@ -18,7 +18,7 @@ const app = Fastify({
   logger: true,
 });
 
-const PORT = parseInt(process.env.FASTIFY_PORT || "3000", 10);
+const PORT = parseInt(process.env.FASTIFY_PORT || "5000", 10);
 const HOST = process.env.FASTIFY_HOST || "0.0.0.0";
 const SESSION_SECRET =
   process.env.SESSION_SECRET || "your-session-secret-change-in-production";
