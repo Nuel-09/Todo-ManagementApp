@@ -1,5 +1,5 @@
 import { FastifyRequest, FastifyReply } from "fastify";
-import { Task } from "../models/task";
+import { Task } from "../models/Task";
 import { handleSuccess, handleError } from "./baseController";
 
 // CREATE - Add new task
