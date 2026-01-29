@@ -1,11 +1,11 @@
 import { FastifyInstance } from "fastify";
+import { ensureAuthenticated } from "../middleware/auth";
 import {
   signup,
   login,
   logout,
   getProfile,
 } from "../controllers/authController";
-import { ensureAuthenticated } from "../middleware/auth";
 
 export const registerAuthRoutes = async (app: FastifyInstance) => {
   // Public routes (no authentication needed)
