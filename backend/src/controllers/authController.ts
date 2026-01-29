@@ -2,6 +2,7 @@ import { FastifyRequest, FastifyReply } from "fastify";
 import bcryptjs from "bcryptjs";
 import { User } from "../models/user";
 import { handleSuccess, handleError } from "./baseController";
+import { signJwt, verifyJwt } from "../utils/jwt"; // JWT PATCH
 
 // SIGNUP - Create new user account
 
@@ -38,19 +39,21 @@ export const signup = async (
             name,
         });
         
-        // Store user ID in session
-        request.session.userId = newUser._id.toString();
 
-        // Return user data (without password)
+        // JWT PATCH: Issue JWT
+        const token = signJwt({ userId: newUser._id });
+
+        // Return user data and JWT
         return handleSuccess(reply, {
-            _id: newUser._id,
-        email: newUser.email,
-        name: newUser.name,
+          _id: newUser._id,
+          email: newUser.email,
+          name: newUser.name,
+          token, // JWT PATCH
         }, 201);
     } catch (error) {
           return handleError(reply, error);
   }
-};
+}
 
 // Login - Authenticate user
 export const login = async (request: FastifyRequest, reply: FastifyReply) => {
@@ -77,16 +80,18 @@ export const login = async (request: FastifyRequest, reply: FastifyReply) => {
         return handleError(reply, { message : "invalid email or password"})
     }
 
-    // Store user ID in session
-    request.session.userId = user._id.toString();
 
-    // Return user data (without password)
+    // JWT PATCH: Issue JWT
+    const token = signJwt({ userId: user._id });
+
+    // Return user data and JWT
     return handleSuccess(
       reply,
       {
         _id: user._id,
         email: user.email,
         name: user.name,
+        token, // JWT PATCH
       }
     );
   } catch (error) {
@@ -96,27 +101,27 @@ export const login = async (request: FastifyRequest, reply: FastifyReply) => {
 
 // LOGOUT - End session
 export const logout = async (request: FastifyRequest, reply: FastifyReply) => {
-  try {
-    // Destroy session
-    await request.session.destroy();
-
-    return handleSuccess(reply, { message: "Logged out successfully" });
-  } catch (error) {
-    return handleError(reply, error);
-  }};
+  // JWT PATCH: No-op for JWT logout (client just deletes token)
+  return handleSuccess(reply, { message: "Logged out successfully" });
+}
 
   // GET PROFILE - Get current user
 export const getProfile = async (request: FastifyRequest, reply: FastifyReply) => {
+  // JWT PATCH: Get token from Authorization header
   try {
-    if (!request.session.userId) {
+    const auth = request.headers["authorization"];
+    if (!auth || !auth.startsWith("Bearer ")) {
       return handleError(reply, { message: "Not authenticated" }, 401);
     }
-
-    const user = await User.findById(request.session.userId).select("-password");
+    const token = auth.split(" ")[1];
+    const payload = verifyJwt(token);
+    if (!payload || typeof payload !== "object" || !payload.userId) {
+      return handleError(reply, { message: "Not authenticated" }, 401);
+    }
+    const user = await User.findById(payload.userId).select("-password");
     if (!user) {
       return handleError(reply, { message: "User not found" }, 404);
     }
-
     return handleSuccess(reply, user);
   } catch (error) {
     return handleError(reply, error);
