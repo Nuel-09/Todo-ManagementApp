@@ -8,7 +8,6 @@ import dotenv from "dotenv";
 import { connectDB } from "./config/database";
 import { registerAuthRoutes } from "./routes/authRoutes";
 import { registerTaskRoutes } from "./routes/taskRoutes";
-import { setAuthHooks } from "./middleware/auth";
 
 dotenv.config();
 
@@ -29,9 +28,6 @@ const configurePlugins = async () => {
 
   // Cookie handling
   await app.register(fastifyCookie);
-
-  // Auth hooks
-  setAuthHooks(app);
 
   // Static files
   await app.register(fastifyStatic, {

@@ -1,6 +1,16 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { Task } from "../models/Task";
 import { handleSuccess, handleError } from "./baseController";
+import { verifyJwt } from "../utils/jwt";
+
+function getUserIdFromAuth(request: FastifyRequest): string | null {
+  const auth = (request as any).headers["authorization"];
+  if (!auth || !auth.startsWith("Bearer ")) return null;
+  const token = auth.split(" ")[1];
+  const payload = verifyJwt(token);
+  if (!payload || typeof payload !== "object" || !payload.userId) return null;
+  return payload.userId;
+}
 
 // CREATE - Add new task
 export const createTask = async (
@@ -8,7 +18,7 @@ export const createTask = async (
   reply: FastifyReply
 ) => {
   try {
-    const { title, description, priority, dueDate } = request.body as {
+    const { title, description, priority, dueDate } = (request as any).body as {
       title: string;
       description?: string;
       priority?: "low" | "medium" | "high";
@@ -20,14 +30,14 @@ export const createTask = async (
       return handleError(reply, { message: "Title is required" }, 400);
     }
 
-    // Check if user is authenticated
-    if (!request.session.userId) {
+    // JWT PATCH: Get userId from JWT
+    const userId = getUserIdFromAuth(request);
+    if (!userId) {
       return handleError(reply, { message: "Not authenticated" }, 401);
     }
-
     // Create task
     const newTask = await Task.create({
-      userId: request.session.userId,
+      userId,
       title,
       description,
       priority,
@@ -47,20 +57,17 @@ export const getTasks = async (
   reply: FastifyReply
 ) => {
   try {
-    // Check if user is authenticated
-    if (!request.session.userId) {
+    const userId = getUserIdFromAuth(request);
+    if (!userId) {
       return handleError(reply, { message: "Not authenticated" }, 401);
     }
-
     // Get query parameters for filtering
-    const { status } = request.query as { status?: string };
-
+    const { status } = (request as any).query as { status?: string };
     // Build filter
-    const filter: any = { userId: request.session.userId };
+    const filter: any = { userId };
     if (status) {
-      filter.status = status; // Filter by status if provided
+      filter.status = status;
     }
-
     // Fetch tasks
     const tasks = await Task.find(filter).sort({ createdAt: -1 });
 
@@ -73,23 +80,20 @@ export const getTasks = async (
 // GET ONE - Get specific task
 export const getTask = async (request: FastifyRequest, reply: FastifyReply) => {
   try {
-    const { id } = request.params as { id: string };
+    const { id } = (request as any).params as { id: string };
 
-    // Check if user is authenticated
-    if (!request.session.userId) {
+    const userId = getUserIdFromAuth(request);
+    if (!userId) {
       return handleError(reply, { message: "Not authenticated" }, 401);
     }
-
     // Find task
     const task = await Task.findById(id);
-
     // Check if task exists
     if (!task) {
       return handleError(reply, { message: "Task not found" }, 404);
     }
-
     // Check if user owns this task
-    if (task.userId.toString() !== request.session.userId) {
+    if (task.userId.toString() !== userId) {
       return handleError(reply, { message: "Not authorized" }, 403);
     }
 
@@ -105,8 +109,9 @@ export const updateTask = async (
   reply: FastifyReply
 ) => {
   try {
-    const { id } = request.params as { id: string };
-    const { title, description, status, priority, dueDate } = request.body as {
+    const { id } = (request as any).params as { id: string };
+    const { title, description, status, priority, dueDate } = (request as any)
+      .body as {
       title?: string;
       description?: string;
       status?: "pending" | "completed" | "deleted";
@@ -114,21 +119,18 @@ export const updateTask = async (
       dueDate?: string;
     };
 
-    // Check if user is authenticated
-    if (!request.session.userId) {
+    const userId = getUserIdFromAuth(request);
+    if (!userId) {
       return handleError(reply, { message: "Not authenticated" }, 401);
     }
-
     // Find task
     const task = await Task.findById(id);
-
     // Check if task exists
     if (!task) {
       return handleError(reply, { message: "Task not found" }, 404);
     }
-
     // Check if user owns this task
-    if (task.userId.toString() !== request.session.userId) {
+    if (task.userId.toString() !== userId) {
       return handleError(reply, { message: "Not authorized" }, 403);
     }
 
@@ -154,23 +156,20 @@ export const deleteTask = async (
   reply: FastifyReply
 ) => {
   try {
-    const { id } = request.params as { id: string };
+    const { id } = (request as any).params as { id: string };
 
-    // Check if user is authenticated
-    if (!request.session.userId) {
+    const userId = getUserIdFromAuth(request);
+    if (!userId) {
       return handleError(reply, { message: "Not authenticated" }, 401);
     }
-
     // Find task
     const task = await Task.findById(id);
-
     // Check if task exists
     if (!task) {
       return handleError(reply, { message: "Task not found" }, 404);
     }
-
     // Check if user owns this task
-    if (task.userId.toString() !== request.session.userId) {
+    if (task.userId.toString() !== userId) {
       return handleError(reply, { message: "Not authorized" }, 403);
     }
 
