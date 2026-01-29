@@ -27,7 +27,8 @@ const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017/todo_app";
 const configurePlugins = async () => {
   // CORS - Allow frontend to connect
   await app.register(fastifyCors, {
-    origin: ["https://taskapp-cvmv.onrender.com"],
+    origin: ["https://taskapp-cvmv.onrender.com",
+       "http://localhost:5173"],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   });
