@@ -8,6 +8,8 @@ import MongoStore from "connect-mongo";
 import dotenv from "dotenv";
 
 import { connectDB } from "./config/database";
+import { registerAuthRoutes } from "./routes/authRoutes";
+import { registerTaskRoutes } from "./routes/taskRoutes";
 import { setAuthHooks } from "./middleware/auth";
 
 dotenv.config();
@@ -27,6 +29,7 @@ const configurePlugins = async () => {
   await app.register(fastifyCors, {
     origin: true,
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   });
 
   // Cookie handling
@@ -61,10 +64,11 @@ const configurePlugins = async () => {
 };
 
 const registerRoutes = async () => {
-  // TODO: Register routes here
-  // Example:
-  // await app.register(authRoutes, { prefix: "/api/auth" });
-  // await app.register(todoRoutes, { prefix: "/api/todos" });
+  // Auth routes
+  await app.register(registerAuthRoutes);
+
+  // Task routes
+  await app.register(registerTaskRoutes);
 };
 
 const start = async () => {

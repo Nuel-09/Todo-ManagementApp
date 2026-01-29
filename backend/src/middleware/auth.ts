@@ -1,32 +1,32 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
-import { Admin, AdminDocument } from "../models/Admin";
+import { User } from "../models/user";
+import { IUserDocument } from "../models/user";
 
-// Extend FastifyRequest to include admin property
+// Extend FastifyRequest to include user property
 declare module "fastify" {
   interface FastifyRequest {
-    admin?: AdminDocument | null;
+    user?: IUserDocument | null;
   }
 }
 
 // Extend FastifySession to include custom properties
 declare module "@fastify/session" {
   interface FastifySessionObject {
-    adminId?: string;
+    userId?: string;
     destroy(): void; // or regenerate()
   }
 }
 
 export const setAuthHooks = (app: FastifyInstance) => {
-  // Load admin data on every request if user is logged in
   app.addHook("preHandler", async (request, reply) => {
-    if (request.session.adminId) {
+    if (request.session.userId) {
       try {
-        request.admin = await Admin.findById(request.session.adminId);
+        request.user = await User.findById(request.session.userId);
       } catch (error) {
-        request.admin = null;
+        request.user = null;
       }
     } else {
-      request.admin = null;
+      request.user = null;
     }
   });
 };
@@ -35,7 +35,7 @@ export const ensureAuthenticated = async (
   request: FastifyRequest,
   reply: FastifyReply
 ) => {
-  if (!request.session.adminId) {
-    return reply.status(401).send({ error: "unauthorised" });
+  if (!request.session.userId) {
+    return reply.status(401).send({ error: "Unauthorized" });
   }
 };

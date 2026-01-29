@@ -11,7 +11,7 @@ export interface IUser {
 }
 
 // Todo Item
-export interface ITodo {
+export interface ITask {
   _id?: ObjectId;
   userId: ObjectId; // FK to User
   title: string;
@@ -23,12 +23,12 @@ export interface ITodo {
   updatedAt?: Date;
 }
 
-// API Response Types to expose id
-export interface IUserResponse extends Omit<IUser, 'password'> {
-  _id: string;
-}
+// API Response Types
+// export interface   IUserResponse extends Omit<IUser, 'password'> {
+//   _id: string;
+// }
 
-export interface ITodoResponse extends ITodo {
-  _id: string;
-  userId: string;
-}
+// export interface ITaskResponse extends ITodo {
+//   _id: string;
+//   userId: string;
+// }

@@ -19,22 +19,24 @@ A professional full-stack task management application with user authentication a
 ## 🛠️ Tech Stack
 
 ### Backend
-| Layer | Technology | Version |
-|-------|-----------|---------|
-| **Runtime** | Node.js | 18+ |
-| **Framework** | Fastify | 5.x |
-| **Language** | TypeScript | 5.x |
-| **Database** | MongoDB Atlas | Latest |
-| **ODM** | Mongoose | 8.x |
-| **Auth** | Session-based + bcryptjs | Custom |
+
+| Layer         | Technology               | Version |
+| ------------- | ------------------------ | ------- |
+| **Runtime**   | Node.js                  | 18+     |
+| **Framework** | Fastify                  | 5.x     |
+| **Language**  | TypeScript               | 5.x     |
+| **Database**  | MongoDB Atlas            | Latest  |
+| **ODM**       | Mongoose                 | 8.x     |
+| **Auth**      | Session-based + bcryptjs | Custom  |
 
 ### Frontend (Coming Soon)
-| Component | Technology |
-|-----------|-----------|
-| **Framework** | React | 18.x |
-| **Build Tool** | Vite | 5.x |
-| **Language** | TypeScript | 5.x |
-| **Styling** | CSS Modules / Tailwind | Latest |
+
+| Component      | Technology             |
+| -------------- | ---------------------- | ------ |
+| **Framework**  | React                  | 18.x   |
+| **Build Tool** | Vite                   | 5.x    |
+| **Language**   | TypeScript             | 5.x    |
+| **Styling**    | CSS Modules / Tailwind | Latest |
 
 ---
 
@@ -70,12 +72,14 @@ cp .env.example .env
 ```
 
 **MongoDB Atlas Setup:**
+
 1. Create a cluster in MongoDB Atlas
 2. Create a database user
 3. Get connection string (replace username:password with your credentials)
 4. Update `MONGO_URI` in `.env`
 
 Example:
+
 ```env
 MONGO_URI=mongodb+srv://myusername:mypassword@cluster0.mongodb.net/todo_app?retryWrites=true&w=majority
 FASTIFY_PORT=3000
@@ -127,6 +131,7 @@ todo-app/
 ## 🔗 API Endpoints
 
 ### Authentication
+
 ```
 POST   /api/auth/signup      - Register new user
 POST   /api/auth/login       - Login user
@@ -135,6 +140,7 @@ GET    /api/auth/profile     - Get current user
 ```
 
 ### Todos (Protected)
+
 ```
 GET    /api/todos            - Get all user todos (with filters)
 POST   /api/todos            - Create new todo
@@ -167,12 +173,14 @@ npm test
 ## 📦 Dependencies
 
 ### Runtime
+
 - `fastify` - Web framework
 - `mongoose` - MongoDB ODM
 - `bcryptjs` - Password hashing
 - `dotenv` - Environment variables
 
 ### Plugins
+
 - `@fastify/cors` - Cross-Origin Resource Sharing
 - `@fastify/cookie` - Cookie handling
 - `@fastify/session` - Session management
@@ -229,6 +237,7 @@ nano .env
 ```
 
 **Required Variables:**
+
 ```env
 MONGO_URI=mongodb://localhost:27017/fotherbys
 PORT=3000
@@ -302,12 +311,14 @@ For detailed architecture guide, see **[CODEBASE_STRUCTURE.md](CODEBASE_STRUCTUR
 ### Admin Access
 
 **Default Admin Account:**
+
 ```
 Email: admin@fotherbys.com
 Password: Admin@123
 ```
 
 **Session Management:**
+
 - Session-based authentication
 - Protected routes via `ensureAuthenticated` middleware
 - CSRF protection recommended for production
@@ -315,6 +326,7 @@ Password: Admin@123
 ### Seller Access
 
 Sellers access via email-based login (no password):
+
 - Submit items for auction
 - Track submission status
 - View assigned lot numbers
@@ -324,6 +336,7 @@ Sellers access via email-based login (no password):
 ## 📚 API Documentation
 
 ### Admin Endpoints
+
 ```typescript
 // Authentication
 POST   /admin/login
@@ -355,6 +368,7 @@ GET    /api/leads/:leadId/items      // Get lead items
 ```
 
 ### Public Endpoints
+
 ```typescript
 GET    /                               // Home page
 GET    /catalogue                      // Browse auctions
@@ -382,12 +396,12 @@ For complete endpoint reference, see **[CODEBASE_STRUCTURE.md#routes](CODEBASE_S
 
 ### 🐛 Recent Fixes (January 15, 2026)
 
-| Issue | Status | Fix |
-|-------|--------|-----|
-| Bulk assign limited to 1 item | ✅ Fixed | Proper ID trimming & validation |
-| Load items not auto-extracting | ✅ Fixed | Auto-link on lead lock |
-| Date filter timezone issues | ✅ Fixed | UTC conversion on all filters |
-| Deleted item 404 errors | ✅ Fixed | Auto-cleanup on home page |
+| Issue                          | Status   | Fix                             |
+| ------------------------------ | -------- | ------------------------------- |
+| Bulk assign limited to 1 item  | ✅ Fixed | Proper ID trimming & validation |
+| Load items not auto-extracting | ✅ Fixed | Auto-link on lead lock          |
+| Date filter timezone issues    | ✅ Fixed | UTC conversion on all filters   |
+| Deleted item 404 errors        | ✅ Fixed | Auto-cleanup on home page       |
 
 ---
 
@@ -415,6 +429,7 @@ curl -X POST http://localhost:3000/api/auctions \
 ### Test Data
 
 Seed data includes:
+
 - **8 Seller Leads** (various statuses: draft, submitted, locked)
 - **23 Items** (across 8 categories)
 - **5 Auctions** (mix of draft, published, closed)
@@ -425,6 +440,7 @@ Seed data includes:
 ## 📊 Database Schema
 
 ### Items Collection
+
 ```typescript
 {
   _id: ObjectId,
@@ -433,24 +449,24 @@ Seed data includes:
   category: String,
   estimateMin: Number,
   estimateMax: Number,
-  
+
   // Professional fields
   artist?: String,
   periodDate?: String,
   dimensions?: String,
   condition?: String,
   auctionSession?: "morning" | "afternoon" | "evening",
-  
+
   // Auction fields
   lotRefNumber: String (unique),
   lotNumber?: Number,
   auctionId?: ObjectId,
   sellerLeadId?: ObjectId,
-  
+
   // Status
   status: "draft" | "published",
   auctionType: "online" | "physical",
-  
+
   createdAt: Date,
   updatedAt: Date
 }
@@ -544,12 +560,12 @@ DEBUG=mongoose:* npm run dev
 
 ### Common Issues
 
-| Issue | Solution |
-|-------|----------|
-| MongoDB connection error | Check `MONGO_URI` in .env |
-| Port already in use | Change `PORT` in .env or kill process on port 3000 |
-| Session errors | Regenerate `SESSION_SECRET` |
-| TypeScript errors | Run `npm run type-check` |
+| Issue                    | Solution                                           |
+| ------------------------ | -------------------------------------------------- |
+| MongoDB connection error | Check `MONGO_URI` in .env                          |
+| Port already in use      | Change `PORT` in .env or kill process on port 3000 |
+| Session errors           | Regenerate `SESSION_SECRET`                        |
+| TypeScript errors        | Run `npm run type-check`                           |
 
 ---
 
@@ -582,11 +598,13 @@ npx ts-node check-lot-numbers.ts  # Check lot numbering
 ## 🔐 Security Considerations
 
 ### Current (Development)
+
 - Session-based auth
 - Basic password hashing (bcryptjs)
 - No CORS headers configured
 
 ### Recommended for Production
+
 - HTTPS/SSL certificates
 - CORS configuration
 - Rate limiting
@@ -600,12 +618,14 @@ npx ts-node check-lot-numbers.ts  # Check lot numbering
 ## 🤝 Contributing
 
 ### Code Standards
+
 - TypeScript with strict mode enabled
 - Functional components preferred
 - Error handling required on all endpoints
 - Type safety enforced throughout
 
 ### Branch Strategy
+
 - `main` - Production-ready code
 - `develop` - Development branch
 - `feature/*` - Feature branches
@@ -624,6 +644,7 @@ npx ts-node check-lot-numbers.ts  # Check lot numbering
 ## 🆘 Support & Issues
 
 For issues or questions:
+
 1. Check **[CODEBASE_STRUCTURE.md](CODEBASE_STRUCTURE.md)** for architecture help
 2. Review **[TESTING_GUIDE.md](TESTING_GUIDE.md)** for testing issues
 3. See **[SPRINT_1_COMPLETION.md](SPRINT_1_COMPLETION.md)** for known issues
@@ -647,6 +668,7 @@ Proprietary - Confidential
 ## 📞 Quick Reference
 
 **Start Development:**
+
 ```bash
 npm install && npm run seed && npm run dev
 ```
