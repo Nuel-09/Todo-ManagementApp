@@ -13,15 +13,34 @@ export default function LoginPage() {
 
   const handleLogin = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setLoading(true);
     setError("");
 
+    // Frontend validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const passwordMinLength = 6;
+
+    if (!email.trim() || !password) {
+      setError("Fill in all fields");
+      return;
+    }
+    if (!emailRegex.test(email)) {
+      setError("Invalid email format");
+      return;
+    }
+    if (password.length < passwordMinLength) {
+      setError(`Password must be at least ${passwordMinLength} characters`);
+      return;
+    }
+    if (/\s/.test(password)) {
+      setError("Password cannot contain spaces");
+      return;
+    }
+
+    setLoading(true);
     try {
       const response = await authAPI.login(email, password);
       console.log("Login successful:", response.data);
-      // Dispatch auth change event
       window.dispatchEvent(new Event("auth-change"));
-      // Redirect to dashboard
       navigate("/dashboard");
     } catch (err: any) {
       setError(err.response?.data?.error || "Login failed");

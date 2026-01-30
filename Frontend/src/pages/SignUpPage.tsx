@@ -14,15 +14,43 @@ export default function SignupPage() {
 
   const handleSignup = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setLoading(true);
     setError("");
 
+    // Frontend validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const nameRegex = /^[A-Za-z0-9_\- ]{2,30}$/;
+    const passwordMinLength = 6;
+
+    if (!name.trim() || !email.trim() || !password) {
+      setError("Fill in all fields");
+      return;
+    }
+    if (!emailRegex.test(email)) {
+      setError("Invalid email format");
+      return;
+    }
+    if (!nameRegex.test(name.trim())) {
+      setError("Name must be 2-30 characters, no special symbols");
+      return;
+    }
+    if (password.length < passwordMinLength) {
+      setError(`Password must be at least ${passwordMinLength} characters`);
+      return;
+    }
+    if (/\s/.test(password)) {
+      setError("Password cannot contain spaces");
+      return;
+    }
+    if (name.trim().length !== name.length) {
+      setError("Name cannot start or end with spaces");
+      return;
+    }
+
+    setLoading(true);
     try {
       const response = await authAPI.signup(email, password, name);
       console.log("Signup successful:", response.data);
-      // Dispatch auth change event
       window.dispatchEvent(new Event("auth-change"));
-      // Redirect to dashboard
       navigate("/dashboard");
     } catch (err: any) {
       setError(err.response?.data?.error || "Signup failed");

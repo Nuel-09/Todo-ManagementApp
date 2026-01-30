@@ -26,28 +26,64 @@ export const createTask = async (
     };
 
     // Validate input
-    if (!title) {
-      return handleError(reply, { message: "Title is required" }, 400);
+    if (!title || typeof title !== "string" || !title.trim()) {
+      return handleError(
+        reply,
+        { message: "Task title is required and cannot be empty." },
+        400
+      );
+    }
+    if (title.length > 100) {
+      return handleError(
+        reply,
+        { message: "Task title must be less than 100 characters." },
+        400
+      );
+    }
+    if (description && description.length > 500) {
+      return handleError(
+        reply,
+        { message: "Description must be less than 500 characters." },
+        400
+      );
+    }
+    if (priority && !["low", "medium", "high"].includes(priority)) {
+      return handleError(
+        reply,
+        { message: "Priority must be 'low', 'medium', or 'high'." },
+        400
+      );
+    }
+    if (dueDate && isNaN(Date.parse(dueDate))) {
+      return handleError(reply, { message: "Due date is invalid." }, 400);
     }
 
     // JWT PATCH: Get userId from JWT
     const userId = getUserIdFromAuth(request);
     if (!userId) {
-      return handleError(reply, { message: "Not authenticated" }, 401);
+      return handleError(
+        reply,
+        { message: "You must be logged in to create a task." },
+        401
+      );
     }
     // Create task
     const newTask = await Task.create({
       userId,
-      title,
-      description,
+      title: title.trim(),
+      description: description?.trim(),
       priority,
       dueDate: dueDate ? new Date(dueDate) : undefined,
       status: "pending",
     });
 
     return handleSuccess(reply, newTask, 201);
-  } catch (error) {
-    return handleError(reply, error);
+  } catch (error: any) {
+    return handleError(
+      reply,
+      { message: error?.message || "Failed to create task. Please try again." },
+      500
+    );
   }
 };
 
@@ -59,7 +95,11 @@ export const getTasks = async (
   try {
     const userId = getUserIdFromAuth(request);
     if (!userId) {
-      return handleError(reply, { message: "Not authenticated" }, 401);
+      return handleError(
+        reply,
+        { message: "You must be logged in to view your tasks." },
+        401
+      );
     }
     // Get query parameters for filtering
     const { status } = (request as any).query as { status?: string };
@@ -72,8 +112,12 @@ export const getTasks = async (
     const tasks = await Task.find(filter).sort({ createdAt: -1 });
 
     return handleSuccess(reply, tasks);
-  } catch (error) {
-    return handleError(reply, error);
+  } catch (error: any) {
+    return handleError(
+      reply,
+      { message: error?.message || "Failed to fetch tasks. Please try again." },
+      500
+    );
   }
 };
 
@@ -84,22 +128,38 @@ export const getTask = async (request: FastifyRequest, reply: FastifyReply) => {
 
     const userId = getUserIdFromAuth(request);
     if (!userId) {
-      return handleError(reply, { message: "Not authenticated" }, 401);
+      return handleError(
+        reply,
+        { message: "You must be logged in to view this task." },
+        401
+      );
     }
     // Find task
     const task = await Task.findById(id);
-    // Check if task exists
     if (!task) {
-      return handleError(reply, { message: "Task not found" }, 404);
+      return handleError(
+        reply,
+        {
+          message: "Task not found. It may have been deleted or never existed.",
+        },
+        404
+      );
     }
-    // Check if user owns this task
     if (task.userId.toString() !== userId) {
-      return handleError(reply, { message: "Not authorized" }, 403);
+      return handleError(
+        reply,
+        { message: "You are not authorized to view this task." },
+        403
+      );
     }
 
     return handleSuccess(reply, task);
-  } catch (error) {
-    return handleError(reply, error);
+  } catch (error: any) {
+    return handleError(
+      reply,
+      { message: error?.message || "Failed to fetch task. Please try again." },
+      500
+    );
   }
 };
 
@@ -121,32 +181,96 @@ export const updateTask = async (
 
     const userId = getUserIdFromAuth(request);
     if (!userId) {
-      return handleError(reply, { message: "Not authenticated" }, 401);
+      return handleError(
+        reply,
+        { message: "You must be logged in to update a task." },
+        401
+      );
     }
     // Find task
     const task = await Task.findById(id);
-    // Check if task exists
     if (!task) {
-      return handleError(reply, { message: "Task not found" }, 404);
+      return handleError(
+        reply,
+        {
+          message: "Task not found. It may have been deleted or never existed.",
+        },
+        404
+      );
     }
-    // Check if user owns this task
     if (task.userId.toString() !== userId) {
-      return handleError(reply, { message: "Not authorized" }, 403);
+      return handleError(
+        reply,
+        { message: "You are not authorized to update this task." },
+        403
+      );
     }
 
     // Update fields
-    if (title) task.title = title;
-    if (description) task.description = description;
-    if (status) task.status = status;
-    if (priority) task.priority = priority;
-    if (dueDate) task.dueDate = new Date(dueDate);
+    if (title !== undefined) {
+      if (!title.trim()) {
+        return handleError(
+          reply,
+          { message: "Task title cannot be empty." },
+          400
+        );
+      }
+      if (title.length > 100) {
+        return handleError(
+          reply,
+          { message: "Task title must be less than 100 characters." },
+          400
+        );
+      }
+      task.title = title.trim();
+    }
+    if (description !== undefined) {
+      if (description.length > 500) {
+        return handleError(
+          reply,
+          { message: "Description must be less than 500 characters." },
+          400
+        );
+      }
+      task.description = description.trim();
+    }
+    if (status !== undefined) {
+      if (!["pending", "completed", "deleted"].includes(status)) {
+        return handleError(
+          reply,
+          { message: "Status must be 'pending', 'completed', or 'deleted'." },
+          400
+        );
+      }
+      task.status = status;
+    }
+    if (priority !== undefined) {
+      if (!["low", "medium", "high"].includes(priority)) {
+        return handleError(
+          reply,
+          { message: "Priority must be 'low', 'medium', or 'high'." },
+          400
+        );
+      }
+      task.priority = priority;
+    }
+    if (dueDate !== undefined) {
+      if (dueDate && isNaN(Date.parse(dueDate))) {
+        return handleError(reply, { message: "Due date is invalid." }, 400);
+      }
+      task.dueDate = dueDate ? new Date(dueDate) : undefined;
+    }
 
     // Save changes
     const updatedTask = await task.save();
 
     return handleSuccess(reply, updatedTask);
-  } catch (error) {
-    return handleError(reply, error);
+  } catch (error: any) {
+    return handleError(
+      reply,
+      { message: error?.message || "Failed to update task. Please try again." },
+      500
+    );
   }
 };
 
@@ -160,24 +284,40 @@ export const deleteTask = async (
 
     const userId = getUserIdFromAuth(request);
     if (!userId) {
-      return handleError(reply, { message: "Not authenticated" }, 401);
+      return handleError(
+        reply,
+        { message: "You must be logged in to delete a task." },
+        401
+      );
     }
     // Find task
     const task = await Task.findById(id);
-    // Check if task exists
     if (!task) {
-      return handleError(reply, { message: "Task not found" }, 404);
+      return handleError(
+        reply,
+        {
+          message: "Task not found. It may have been deleted or never existed.",
+        },
+        404
+      );
     }
-    // Check if user owns this task
     if (task.userId.toString() !== userId) {
-      return handleError(reply, { message: "Not authorized" }, 403);
+      return handleError(
+        reply,
+        { message: "You are not authorized to delete this task." },
+        403
+      );
     }
 
     // Delete task
     await Task.findByIdAndDelete(id);
 
-    return handleSuccess(reply, { message: "Task deleted successfully" });
-  } catch (error) {
-    return handleError(reply, error);
+    return handleSuccess(reply, { message: "Task deleted successfully." });
+  } catch (error: any) {
+    return handleError(
+      reply,
+      { message: error?.message || "Failed to delete task. Please try again." },
+      500
+    );
   }
 };

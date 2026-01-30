@@ -5,18 +5,17 @@ const API_URL =
   import.meta.env.VITE_API_URL || "https://todo-mnagementapp.onrender.com";
 
 // JWT PATCH: Store token in memory (or use localStorage for persistence)
-let jwtToken: string | null = null;
+let jwtToken: string | null = localStorage.getItem("jwtToken");
 export function setJwtToken(token: string) {
   jwtToken = token;
-  // Optionally: localStorage.setItem('jwtToken', token);
+  localStorage.setItem("jwtToken", token);
 }
 export function clearJwtToken() {
   jwtToken = null;
-  // Optionally: localStorage.removeItem('jwtToken');
+  localStorage.removeItem("jwtToken");
 }
 export function getJwtToken() {
-  return jwtToken;
-  // Optionally: return localStorage.getItem('jwtToken');
+  return jwtToken || localStorage.getItem("jwtToken");
 }
 
 // create axios instance
