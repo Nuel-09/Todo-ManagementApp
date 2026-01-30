@@ -112,8 +112,10 @@ export default function DashboardPage() {
     <div className="dashboard-container">
       <header className="dashboard-header">
         <h1>Todo App</h1>
-        {user && <p>Welcome, {user.name}!</p>}
-        <button onClick={handleLogout}>Logout</button>
+        <div className="dashboard-header-right">
+          {user && <p>Welcome, {user.name}!</p>}
+          <button onClick={handleLogout}>Logout</button>
+        </div>
       </header>
 
       <div className="dashboard-content">

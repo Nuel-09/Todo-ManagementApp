@@ -1,3 +1,23 @@
+@media (max-width: 600px) {
+  .dashboard-header {
+    padding: 12px;
+    font-size: 16px;
+    gap: 8px;
+  }
+  .dashboard-header h1 {
+    font-size: 1.3em;
+  }
+  .dashboard-header-right p {
+    font-size: 0.95em;
+  }
+  .dashboard-header button {
+    padding: 6px 12px;
+    font-size: 0.95em;
+  }
+  .dashboard-header-right {
+    gap: 8px;
+  }
+}
 * {
   margin: 0;
   padding: 0;
@@ -32,8 +52,15 @@ body {
   color: #f7fafc;
   padding: 20px;
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  /* Right side of header: welcome + logout */
+  .dashboard-header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
   box-shadow: 0 2px 10px rgba(44, 62, 80, 0.2);
   border-bottom: 1px solid #4a5568;
 }
